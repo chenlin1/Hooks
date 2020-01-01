@@ -1,7 +1,7 @@
 
 
-import React, { useState, useReducer, useEffect, useLayoutEffect } from 'react';
-
+import React, { useState, useReducer, useEffect, useContext, useLayoutEffect } from 'react';
+import MyContext from './my-context';
 
 function conutReducer(state, action) {
   switch (action.type) {
@@ -18,6 +18,10 @@ function App() {
   // const [count, setCount] = useState(0);
   const [count, dispatchCount ] = useReducer(conutReducer, 0);
   const [name, setName] = useState('jokcy');
+  
+  const context = useContext(MyContext);
+  console.log(context)
+
   // useEffect(() => {
   //   const interval = setInterval(() => {
   //     // setCount(c=>c+1)
@@ -42,6 +46,7 @@ function App() {
       <input value={name} onChange={(e) => setName(e.target.value)} />
      <button onClick={()=> dispatchCount({ type: "add" })}>{count}</button>
      {/* <button onClick={() => setCount(count + 1)}>Clikc me</button> */}
+     <p>{context}</p>
     </div>
   );
 }
