@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        // 第一种字符串反转
+        // const strfunctio = (data) => {
+        //     let arr = data.split(' ');
+        //     let result = arr.map(item => {
+        //         return item.split('').reverse().join('');
+        //     })
+        //     return result.join('')
+        // }
+        // console.log(strfunctio("abcdefg"))
+        // 第二张
+        const strfunctio = (data) => {
+            return data.split(' ').map(item => {
+                return item.split('').reverse().join('');
+            }).join('')
+        }
+        console.log(strfunctio("abcdefgh"))
+    </script>
+</body>
+</html>
