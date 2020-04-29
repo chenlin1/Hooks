@@ -1,0 +1,187 @@
+import React, { Component } from 'react';
+import {
+  Button, Input, Table, message, Row, Col, Icon,
+} from 'antd';
+import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import HTML5Backend from 'react-dnd-html5-backend';
+import update from 'immutability-helper';
+
+
+const type = 'DragbleBodyRow';
+
+const DragableBodyRow = ({ index, moveRow, className, style, ...restProps }) => {
+    const ref = React.useRef();
+    const [{ isOver, dropClassName }, drop] = useDrop({
+        accept: type,
+        collect: monitor => {
+            const { index: dragIndex } = monitor.getItem() || {};
+            if (dragIndex === index) {
+                return {};
+            }
+            return {
+                isOver: monitor.isOver(),
+                dropClassName: dragIndex < index ? ' drop-over-downward' : ' drop-over-upward',
+            };
+        },
+        drop: item => {
+            moveRow(item.index, index);
+        },
+    });
+    const [, drag] = useDrag({
+        item: { type, index },
+        collect: monitor => ({
+            isDragging: monitor.isDragging(),
+        }),
+    });
+    drop(drag(ref));
+    return (
+        <tr
+            ref={ref}
+            className={`${className}${isOver ? dropClassName : ''}`}
+            style={{ cursor: 'move', ...style }}
+            {...restProps}
+        />
+    );
+};
+
+
+
+class productTable extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      uploadedImage: '',
+      uploadedImageId: '',
+      previewVisible: false,
+      fileList: [],
+      list: [''],
+      data: [
+        {
+          key: 1,
+          name: '',
+          param: '',
+          order: 1,
+          id: new Date().getTime(),
+        },
+      ],
+      count: 1,
+    };
+  }
+
+    columns = [
+        {
+            title: 'Name',
+            dataIndex: 'name',
+            key: 'name',
+            render: (text, record, index) => <Input onBlur={(e) => this.blurInputVal(e, index, 'name')} placeholder="请输入技术信息名称" />,
+        },
+        {
+            title: 'Param',
+            dataIndex: 'param',
+            key: 'param',
+            render: (text, record, index) => <Input onBlur={(e) => this.blurInputVal(e, index, 'param')} placeholder="请输入技术信息参数" />,
+        },
+        {
+            title: 'operation',
+            dataIndex: 'operation',
+            key: 'operation',
+            render: (text, record) =>
+                this.state.data.length >= 2 ? (
+                    <Icon
+                      type="close-circle"
+                      style={{ color: '#D7D7D9', fontSize: '16px', cursor: 'pointer' }}
+                      onClick={() => this.handleDelete(record.key)}
+                    />
+                ) : null,
+        },
+    ];
+
+    blurInputVal = (e, target, parameter) => {
+      const val = e.target.value;
+      const { data } = this.state;
+      if (parameter === 'name') {
+        data[target].name = val;
+      } else {
+        data[target].param = val;
+      }
+      this.setState({
+        data,
+      });
+    }
+
+    handleDelete = (key) => {
+      const { data } = this.state;
+      this.setState({
+        data: data.filter(item => item.order !== key),
+      });
+    };
+
+    handleAdd = () => {
+      const { count, data } = this.state;
+      const newData = {
+        key: count + 1,
+        order: count + 1,
+        name: '',
+        param: '',
+        id: new Date().getTime(),
+      };
+      if (data.length >= 30) {
+        message.warning('Maximum 30 entries are allowed');
+        return false;
+      }
+      this.setState({
+        data: [...data, newData],
+        count: count + 1,
+      });
+      return true;
+    }
+
+    components = {
+      body: {
+        row: DragableBodyRow,
+      },
+    };
+
+    moveRow = (dragIndex, hoverIndex) => {
+      const { data } = this.state;
+      const dragRow = data[dragIndex];
+      const list = this.state;
+      this.setState(
+        update(list, {
+          data: {
+            $splice: [
+              [dragIndex, 1],
+              [hoverIndex, 0, dragRow],
+            ],
+          },
+        }),
+      );
+    };
+
+    render() {
+      const { data } = this.state;
+      return (
+        <div>
+          <DndProvider backend={HTML5Backend}>
+            <Table
+              columns={this.columns}
+              showHeader={false}
+              dataSource={data}
+              components={this.components}
+              onRow={(record, index) => ({
+                index,
+                moveRow: this.moveRow,
+              })}
+              pagination={false}
+            />
+          </DndProvider>
+          <Row>
+            <Col span={24}><Button style={{ width: '100%'}} onClick={this.handleAdd}>继续添加</Button></Col>
+          </Row>
+        </div>
+      );
+    }
+}
+
+
+export default productTable;
